@@ -5,6 +5,7 @@ LIST_PATH=${2}
 JOB_INDEX=${3}
 SKIP_FLAG=${4}
 RETRY_FLAG=${5}
+SERVICE=${SERVICE:-"HTTP"}
 
 CONF=`sed "${JOB_INDEX}!d" ${LIST_PATH}`
 BRAND=`echo $CONF | awk '{print $1}'`
@@ -94,13 +95,16 @@ echo ${SHA256}
 
 cd /gh
 # HTTP
-timeout 72000 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,81" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="HTTP" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1 
-
-# UPNP
-#timeout 129600 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,81,1900" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="UPNP" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1 
-
-# DNS
-#timeout 129600 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,53" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="DNS" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1 
+if [[ $SERVICE == "HTTP" ]]; then
+	timeout 72000 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,81" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="HTTP" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1
+elif [[ $SERVICE == "UPNP" ]]; then
+	timeout 129600 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,81,1900" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="UPNP" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1 
+elif [[ $SERVICE == "DNS" ]]; then
+	timeout 129600 python3 /gh/gh.py --outpath /results/${JOB_INDEX} --workspace /tmp/scratch --firmae /work/$JOB_INDEX/FirmAE --logpath=${LOCAL_PATCH} --cache_path=/cache --ip 172.21.0.2 --ports="80,53" --max_cycles=26 -rh --brand=${BRAND} --rehost_type="DNS" --img_path=/${BRAND}/${NAME} >> ${LOCAL_OUT} 2>&1 
+else
+	echo "Invalid service type"
+	exit 1
+fi
 
 RET_CODE=`echo $?`
 tail ${LOCAL_OUT}

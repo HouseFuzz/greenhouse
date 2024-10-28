@@ -55,6 +55,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
+          - name: SERVICE
+            value: "UPNP"
       volumes:
         - name: gh-shared
           hostPath:
